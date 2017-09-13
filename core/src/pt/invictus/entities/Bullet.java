@@ -80,7 +80,7 @@ public class Bullet extends Entity {
 	public void collide(Entity o) {
 		super.collide(o);
 		
-		if (o instanceof Player && o != owner) {
+		if (o instanceof Player && !o.dead && o != owner) {
 			o.damage(damage);
 			float dir = Util.pointDirection(x, y, o.x, o.y);
 			float force = 250;

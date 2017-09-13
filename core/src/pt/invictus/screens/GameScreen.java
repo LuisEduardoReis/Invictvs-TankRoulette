@@ -2,8 +2,6 @@ package pt.invictus.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.controllers.Controller;
-import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -11,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -21,7 +18,8 @@ import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
-import pt.invictus.XBox360Pad;
+import pt.invictus.controllers.GameController;
+import pt.invictus.controllers.GameController.Key;
 import pt.invictus.entities.Player;
 
 public class GameScreen extends ScreenAdapter {
@@ -30,8 +28,8 @@ public class GameScreen extends ScreenAdapter {
 	
 	SpriteBatch batch;	
 	ShapeRenderer shapeRenderer;
-	OrthographicCamera camera;
-	Viewport viewport;
+	public OrthographicCamera camera;
+	public Viewport viewport;
 	
 	float t;
 	Level level;
@@ -45,7 +43,6 @@ public class GameScreen extends ScreenAdapter {
 	public float start_timer, start_delay;
 	public float victory_timer, victory_delay;
 	
-	Array<Controller> controllers = Controllers.getControllers();
 	public static String place_names[] = {"1st","2nd","3rd","4th"};
 	
 	
@@ -79,12 +76,14 @@ public class GameScreen extends ScreenAdapter {
 		level = new Level(this, level_name);
 		paused = false;
 				
-		System.out.println(controllers);
+		
 		int so = Util.randomRangei(level.spawns.size());
-		for(int i = 0; i < controllers.size; i++) {
+		for(int i = 0; i < 4; i++) {
 			Vector2 v = level.spawns.get((i+so)%level.spawns.size());
-			Player p = (Player) new Player(level, i >= controllers.size ? null : controllers.get(i), i).setPosition(v.x, v.y);
-			p.setDirection(Util.randomRangef(0, 2*(float)Math.PI));			
+			GameController c = (i >= main.controllers.size() ? null : main.controllers.get(i));
+			new Player(level, c, i)
+				.setPosition(v.x, v.y)
+				.setDirection(Util.randomRangef(0, 2*(float)Math.PI));		
 		}
 	}
 	
@@ -95,12 +94,11 @@ public class GameScreen extends ScreenAdapter {
 		
 		// Update
 			t += delta;
+			
 			if (fadein_timer > 0) fadein_timer = Util.stepTo(fadein_timer, 0, delta);
 			if (fadein_timer == 0) start_timer -= delta;
 			if (fadeout_timer > 0) fadeout_timer = Util.stepTo(fadeout_timer, 0, delta);
-			if (fadeout_timer == 0) {
-				if (fadeout_action != null) fadeout_action.run();
-			}
+			if (fadeout_timer == 0) if (fadeout_action != null) fadeout_action.run();
 			if (victory_timer > 0) victory_timer = Util.stepTo(victory_timer, 0, delta);
 			
 			if (!paused) level.update(delta);
@@ -109,30 +107,27 @@ public class GameScreen extends ScreenAdapter {
 			// Pause
 			for(Player p : level.players) {
 				if (p.controller == null) continue;
-				// Start
-				if (p.controller.getButton(XBox360Pad.BUTTON_START)) {
-					if (!p.start_down) {
-						if (victory_timer < 0) {
-							paused ^= true;
-							if (!paused) Main.playSound(Assets.itempickup);
-							else Main.playSound(Assets.dropbomb);
-						}
-						else {
-							fadeout_timer = fadeout_delay;
-							fadeout_action = new Runnable() {
-								@Override
-								public void run() {
-									main.setScreen(new MenuScreen(main));
-								}
-							}; 
-						}
-					}
-					p.start_down = true;
-				} else
-					p.start_down = false;			
 				
+				// Start
+				if (p.controller.getKeyPressed(Key.START)) {
+					if (victory_timer < 0) {
+						paused ^= true;
+						if (!paused) Main.playSound(Assets.itempickup);
+						else Main.playSound(Assets.dropbomb);
+					}
+					else {
+						fadeout_timer = fadeout_delay;
+						fadeout_action = new Runnable() {
+							@Override
+							public void run() {
+								main.setScreen(new MenuScreen(main));
+							}
+						}; 
+					}
+				}
+								
 				// Back
-				if (p.controller.getButton(XBox360Pad.BUTTON_BACK)) {
+				if (p.controller.getKeyPressed(Key.BACK)) {
 					fadeout_timer = fadeout_delay;
 					fadeout_action = new Runnable() {
 						@Override
@@ -148,9 +143,10 @@ public class GameScreen extends ScreenAdapter {
 		// Render
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		
+		camera.update();
 		viewport.apply();
 		batch.setProjectionMatrix(camera.combined);
 		shapeRenderer.setProjectionMatrix(camera.combined);
@@ -218,10 +214,6 @@ public class GameScreen extends ScreenAdapter {
 					p.sprite.render(batch, 0, x+(3.25f+0.75f*li)*s, 2f*s,  0.75f,0.75f, 90, Color.WHITE);
 			}
 			
-			if (fadein_timer > 0) {
-				batch.setColor(0,0,0,fadein_timer/fadein_delay);
-				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);
-			}
 			
 			// Start
 			if (start_timer > -2) {
@@ -282,6 +274,10 @@ public class GameScreen extends ScreenAdapter {
 				Util.drawTitle(batch, Assets.font, "Press Start to play again", Main.WIDTH/2,Main.HEIGHT*0.15f, a);
 			}
 			
+			if (fadein_timer > 0) {
+				batch.setColor(0,0,0,fadein_timer/fadein_delay);
+				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);
+			}
 			if (fadeout_timer >= 0) {
 				batch.setColor(0,0,0,1-(fadeout_timer/fadeout_delay));
 				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);
@@ -291,9 +287,18 @@ public class GameScreen extends ScreenAdapter {
 		
 		
 		if (Main.DEBUG) {
+			batch.begin();
+				Assets.font.setColor(Color.WHITE);
+				Assets.font.getData().setScale(1);
+				
+				Assets.font.draw(batch,level.entities.size()+"",100,Main.HEIGHT);
+				Assets.font.draw(batch,Gdx.graphics.getFramesPerSecond()+"",100,Main.HEIGHT-30);
+				
+			batch.end();
+			
 			shapeRenderer.begin(ShapeType.Line);
 				level.renderDebug(shapeRenderer);
-			shapeRenderer.end();
+			shapeRenderer.end();	
 		}
 		
 	}

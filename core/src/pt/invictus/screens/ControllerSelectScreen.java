@@ -6,6 +6,7 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -16,9 +17,10 @@ import pt.invictus.Main;
 import pt.invictus.Util;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
+import pt.invictus.controllers.KeyBoardMouseController;
 import pt.invictus.controllers.Xbox360Controller;
 
-public class LevelSelectScreen extends ScreenAdapter {
+public class ControllerSelectScreen extends ScreenAdapter {
 	Main main;
 	
 	SpriteBatch batch;	
@@ -32,11 +34,8 @@ public class LevelSelectScreen extends ScreenAdapter {
 	float fadeout_timer, fadeout_delay;
 	Runnable fadeout_action;
 	
-	int index;
-	String levels[] = {"level.tmx","level2.tmx"};
-		
 	
-	public LevelSelectScreen(Main main) {
+	public ControllerSelectScreen(Main main) {
 		this.main = main;
 		
 		t = 0;
@@ -54,7 +53,6 @@ public class LevelSelectScreen extends ScreenAdapter {
 		fadeout_delay = 1;
 		fadeout_action = null;
 		
-		index = 0;
 	}
 	
 	@Override
@@ -70,31 +68,35 @@ public class LevelSelectScreen extends ScreenAdapter {
 		}		
 		
 		if (fadeout_timer < 0) {
-			boolean start = false;
-			for(GameController c : main.controllers) {
+			int active = 0;
+			for(GameController c : main.controllers) if (c.getActive()) active++;
 			
-				if (c instanceof Xbox360Controller && c.getLookNormal() > 0.25) {
-					float v = (float) Math.cos(c.getLookDir(0, 0, null));
-					if (v < -0.5) index = 0;
-					if (v > 0.5) index = 1;
-				}
-								
-				if (c instanceof Xbox360Controller && c.getKeyPressed(Key.A)) {
-					start = true; break;
+			if (active > 0) {
+				boolean start = false;
+				
+				for(GameController c : main.controllers)
+					if (c.getKeyDown(Key.START)) {	
+						start = true; break;
+					}
+			
+				if (start || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+					
+					Main.playSound(Assets.itempickup);
+					
+					fadeout_timer = fadeout_delay;
+					fadeout_action = new Runnable() {
+						@Override
+						public void run() {
+							main.setScreen(new LevelSelectScreen(main));
+						}
+					}; 
 				}
 			}
-				
-			if (start || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-				
-				Main.playSound(Assets.itempickup);
-				
-				fadeout_timer = fadeout_delay;
-				fadeout_action = new Runnable() {
-					@Override
-					public void run() {
-						main.setScreen(new GameScreen(main, levels[index % levels.length]));
-					}
-				}; 
+			
+			for(GameController c : main.controllers) {
+				if (c.getKeyPressed(Key.A)) {
+					c.setActive(!c.getActive()); 
+				}
 			}
 		}
 		
@@ -112,30 +114,49 @@ public class LevelSelectScreen extends ScreenAdapter {
 		
 		batch.begin();
 		
+			BitmapFont font = Assets.font;
+			
+			batch.setColor(0,0,0,0.5f);
+			batch.draw(Assets.fillTexture,0,0);
+			
 			Assets.font.getData().setScale(4);
-			Util.drawTitle(batch, Assets.font, "Select your level!", Main.WIDTH/2,Main.HEIGHT*0.9f, 1);
-
-			float sc = 1/2.25f;
-			float br = 20;
-			batch.setColor(Color.WHITE);
-			if (index % 2 == 0) batch.draw(Assets.rect, Main.SIZE-br, Main.HEIGHT/3.5f-br, Main.WIDTH*sc+2*br, Main.HEIGHT*sc+2*br);
-			if (index % 2 == 1) batch.draw(Assets.rect, Main.WIDTH-Main.SIZE-Main.WIDTH*sc-br, Main.HEIGHT/3.5f-br, Main.WIDTH*sc+2*br, Main.HEIGHT*sc+2*br);
+			Util.drawTitle(batch, Assets.font, "Select Controllers", Main.WIDTH/2,Main.HEIGHT*0.85f, 1);
 			
 			
-			batch.setColor(Color.WHITE);
-			batch.draw(Assets.level1,Main.SIZE,Main.HEIGHT/3.5f,Main.WIDTH*sc, Main.HEIGHT*sc);
-			batch.draw(Assets.level2,Main.WIDTH-Main.SIZE-Main.WIDTH*sc,Main.HEIGHT/3.5f,Main.WIDTH*sc, Main.HEIGHT*sc);
-			
-			
-					
-			if (t > 2 && t % 1 < 0.5f) {
-				Assets.font.getData().setScale(2.5f);
-				Util.drawTitle(batch, Assets.font, "Press Start/Space to continue", Main.WIDTH/2,Main.HEIGHT*0.15f, 1);
+			for(int i = 0; i < main.controllers.size(); i++) {
+				GameController c = main.controllers.get(i);
+				float pos = Main.WIDTH/5.5f * (i -(main.controllers.size()-1)/2f);				
+				
+				if (c.getActive()) 
+					batch.setColor(Color.WHITE);
+				else 
+					batch.setColor(Color.DARK_GRAY);
+				
+				if (c instanceof Xbox360Controller) {
+					Util.drawCenteredR(batch, Assets.xbox_controller,Main.WIDTH/2+pos,Main.HEIGHT/2, 0.5f,0.5f, 0, true,true);
+				}
+				if (c instanceof KeyBoardMouseController) {
+					Util.drawCenteredR(batch, Assets.keyboardmouse_controller,Main.WIDTH/2+pos,Main.HEIGHT/2, 0.5f,0.5f, 0, true,true);
+				}
 			}
+			batch.setColor(Color.WHITE);
+			
+			font.getData().setScale(1.5f);
+			font.setColor(Color.WHITE);
+			Util.drawTextCentered(batch, font, "Press Fire to activate/deactivate controller", Main.WIDTH/2,230);
+			
+			int active = 0;
+			for(int i = 0; i < main.controllers.size(); i++) if (main.controllers.get(i).getActive()) active++;
+			if (active > 0) {
+				font.getData().setScale(2.5f);
+				font.setColor(Color.WHITE);
+				Util.drawTextCentered(batch, font, "Press Start/Space to continue", Main.WIDTH/2,100);
+			}
+			
 			if (fadein_timer > 0) {
 				batch.setColor(0,0,0,fadein_timer/fadein_delay);
 				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);
-			}			
+			}
 			if (fadeout_timer >= 0) {
 				batch.setColor(0,0,0,1-(fadeout_timer/fadeout_delay));
 				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);

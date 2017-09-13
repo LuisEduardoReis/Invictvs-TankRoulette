@@ -27,7 +27,7 @@ public class Entity {
 	public boolean visible;
 	public boolean dead;
 	public boolean remove;
-	public boolean levelCollisions, entityCollisions, imovable;
+	public boolean collisions, levelCollisions, entityCollisions, imovable;
 	
 	public float t;
 	public float x, y, z;
@@ -67,6 +67,7 @@ public class Entity {
 		this.visible = true;
 		this.dead = false;
 		this.remove = false;
+		this.collisions = true;
 		this.levelCollisions = false;
 		this.entityCollisions = false;
 		this.imovable = false;
@@ -152,7 +153,10 @@ public class Entity {
 	}
 	
 	public void renderDebug(ShapeRenderer renderer) {
-		renderer.ellipse(this.x - this.radius, this.y - this.radius, 2*this.radius, 2*this.radius);
+		if (collisions) {
+			renderer.setColor(Color.WHITE);
+			renderer.ellipse(this.x - this.radius, this.y - this.radius, 2*this.radius, 2*this.radius);
+		}
 	}
 	
 	public void die() {

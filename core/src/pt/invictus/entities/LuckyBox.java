@@ -75,6 +75,8 @@ public class LuckyBox extends Entity {
 		sprite.render(batch, 0, x, y + 7*(float)(Math.sin(5*level.t)+1), scale, scale, 0, color.set(1,1,1,alpha));
 		
 		if (Main.DEBUG) {
+			Assets.font.getData().setScale(1);
+			Assets.font.setColor(Color.WHITE);
 			Assets.font.draw(batch, "R:"+((int)respawn_timer), x,y+1.5f*Main.SIZE);
 			Assets.font.draw(batch, "D:"+((int)despawn_timer), x,y+Main.SIZE);
 		}

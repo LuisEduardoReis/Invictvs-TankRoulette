@@ -144,14 +144,17 @@ public class Level {
 		
 		// Entity Collisions
 		for(Entity e : entities) {
-		for(Entity o : entities) {
-			if (e == o) continue;
-			float sqrDist = Util.pointDistanceSqr(e.x, e.y, o.x, o.y);
-			float radii = (e.radius + o.radius);
-			
-			// Collisions
-			if (sqrDist <= radii*radii) e.collide(o);			
-		}}
+			if (!e.collisions) continue;
+			for(Entity o : entities) {
+				if (!o.collisions) continue;
+				if (e == o) continue;
+				float sqrDist = Util.pointDistanceSqr(e.x, e.y, o.x, o.y);
+				float radii = (e.radius + o.radius);
+				
+				// Collisions
+				if (sqrDist <= radii*radii) e.collide(o);			
+			}
+		}
 		
 		for(int i = 0; i < entities.size(); i++) 
 			if (entities.get(i).remove)

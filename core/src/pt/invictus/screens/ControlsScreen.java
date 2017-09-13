@@ -3,8 +3,6 @@ package pt.invictus.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.controllers.Controller;
-import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -17,7 +15,8 @@ import pt.invictus.Assets;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
-import pt.invictus.XBox360Pad;
+import pt.invictus.controllers.GameController;
+import pt.invictus.controllers.GameController.Key;
 
 public class ControlsScreen extends ScreenAdapter {
 	Main main;
@@ -68,8 +67,8 @@ public class ControlsScreen extends ScreenAdapter {
 		
 		if (fadeout_timer < 0) {
 			boolean start = false;
-			for(Controller c : Controllers.getControllers())
-				if (c.getButton(XBox360Pad.BUTTON_START)) {
+			for(GameController c : main.controllers)
+				if (c.getKeyDown(Key.START) || c.getKeyDown(Key.A)) {
 					start = true; break;
 				}
 			if (start || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
@@ -80,7 +79,7 @@ public class ControlsScreen extends ScreenAdapter {
 				fadeout_action = new Runnable() {
 					@Override
 					public void run() {
-						main.setScreen(new LevelSelectScreen(main));
+						main.setScreen(new ControllerSelectScreen(main));
 					}
 				}; 
 			}
@@ -113,7 +112,7 @@ public class ControlsScreen extends ScreenAdapter {
 			
 			if (t > 2 && t % 1 < 0.5f) {
 				Assets.font.getData().setScale(2);
-				Util.drawTitle(batch, Assets.font, "Press Start to continue", Main.WIDTH/2,Main.HEIGHT*0.125f, 1);
+				Util.drawTitle(batch, Assets.font, "Press Start/Space to continue", Main.WIDTH/2,Main.HEIGHT*0.125f, 1);
 			}
 			if (fadein_timer > 0) {
 				batch.setColor(0,0,0,fadein_timer/fadein_delay);

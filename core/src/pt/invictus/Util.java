@@ -108,6 +108,9 @@ public class Util {
 	
 		batch.draw(s, w, h, t);
 	}
+	public static void drawCenteredR(SpriteBatch batch, TextureRegion s, float x, float y, float sw, float sh, float rotation, boolean center_h, boolean center_v) {
+		drawCentered(batch, s, x,y, sw*s.getRegionWidth(),sh*s.getRegionHeight(),rotation,center_h,center_v);
+	}
 	
 	public static String filledString(char c, int s) { return new String(new char[s]).replace('\0', c); }
 

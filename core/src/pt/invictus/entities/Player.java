@@ -1,7 +1,7 @@
 package pt.invictus.entities;
 
-import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 
 import pt.invictus.Assets;
@@ -11,15 +11,15 @@ import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
-import pt.invictus.XBox360Pad;
+import pt.invictus.controllers.GameController;
+import pt.invictus.controllers.GameController.Key;
 import pt.invictus.entities.particles.Explosion;
 import pt.invictus.entities.particles.Shard;
 
 public class Player extends Entity {
 
 	public int index;
-	public Controller controller;
-	public boolean a_down, x_down, start_down;
+	public GameController controller;
 	
 	public int lives;
 	public float respawn_timer, respawn_delay;
@@ -43,7 +43,7 @@ public class Player extends Entity {
 			new Color(178f/255,0,1,1),
 	};
 	
-	public Player(Level level, Controller c, int i) {
+	public Player(Level level, GameController c, int i) {
 		super(level);
 		level.players.add(this);
 		
@@ -101,59 +101,60 @@ public class Player extends Entity {
 		}
 					
 		if (controller != null && !dead && level.game.start_timer < 0 && level.game.victory_timer < 0) {
-			float lax = controller.getAxis(XBox360Pad.AXIS_LEFT_X);
-			float lay = -controller.getAxis(XBox360Pad.AXIS_LEFT_Y);					
-			float trigger = controller.getAxis(XBox360Pad.AXIS_LEFT_TRIGGER);
+			float look_dir = controller.getLookDir(x, y, level.game.viewport);
+			float look_norm = controller.getLookNormal();
+			float trigger_val = controller.getTrottleAxis();
 			
 			float deadzone = 0.25f;
 			
 			float t_direction = direction;
-			if (Math.abs(lax*lax + lay*lay) > deadzone*deadzone) { 
-				t_direction = Util.pointDirection(0, 0, lax, lay);
+			if (look_norm > deadzone) { 
+				t_direction = look_dir;
 				
 				direction = Util.stepToDirection(direction, t_direction, (float) (2*Math.PI*delta)*0.5f);
 			}
 			
-			if (Math.abs(trigger) > deadzone) { 
-				speed = (star_timer > 0 ? 1.25f : 1) * maxspeed * Math.abs(trigger);
+			if (Math.abs(trigger_val) > deadzone) { 
+				speed = (star_timer > 0 ? 1.25f : 1) * maxspeed * Math.abs(trigger_val);
 			} else
 				speed = 0;
 			
-			if (t_direction != direction)
+			
+			if (speed != 0) {
+				anim_speed = Math.abs(speed)/maxspeed;
+			} else if (t_direction != direction)
 				anim_speed = 1;
 			else
-				anim_speed = Math.abs(speed)/maxspeed;
+				anim_speed = 0;
+				
 			
-			if (controller.getButton(XBox360Pad.BUTTON_A)) {
-				if (a_down == false) {
-					if (gun_timer == 0) {
-						if (item != null) 
-							useItem();
-						else {
-							// Normal Shot
-							Bullet b = (Bullet) new Bullet(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
-							b.dx = (float) (bullet_speed*Math.cos(direction));
-							b.dy = (float) (bullet_speed*Math.sin(direction));
-							
-							if (star_timer == 0) addEVel((float) (-recoil*Math.cos(direction)), (float) (-recoil*Math.sin(direction)));
-							
-							Main.playSound(Assets.shoot);
-						}
-						gun_timer = gun_delay;
-					}
+			if (controller.getKeyPressed(Key.A)) {
+				// Shoot
+				if (gun_timer == 0) {
+					gun_timer = gun_delay;
+					
+					if (item != null)
+						// Use item
+						useItem();
+					else {
+						// Normal Shot
+						Bullet b = (Bullet) new Bullet(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
+						b.dx = (float) (bullet_speed*Math.cos(direction));
+						b.dy = (float) (bullet_speed*Math.sin(direction));
+						
+						if (star_timer == 0) addEVel((float) (-recoil*Math.cos(direction)), (float) (-recoil*Math.sin(direction)));
+						
+						Main.playSound(Assets.shoot);
+					}					
 				}
-				a_down = true;
-			} else
-				a_down = false;
+			}
+		
 			
 			// Button X
-			if (controller.getButton(XBox360Pad.BUTTON_X)) {
-				if (x_down == false) {
-					if (Main.DEBUG) getItem();
-				}
-				x_down = true;
-			} else
-				x_down = false;
+			if (controller.getKeyPressed(Key.X)) {
+				if (Main.DEBUG) getItem();
+			}
+			
 		
 		} else {
 			// Dead
@@ -265,10 +266,8 @@ public class Player extends Entity {
 		
 		if (lives > 0) 
 			respawn_timer = respawn_delay;
-		else
+		else if (level.game.victory_timer < 0)
 			level.ranking.add(this);
-		
-		levelCollisions = false;
 		
 		item = null;
 		item_timer = -1;
@@ -285,6 +284,17 @@ public class Player extends Entity {
 		if (star_timer > 0) return;
 		super.damage(damage);
 		Main.playSound(Assets.hurt);
+	}
+	
+	@Override
+	public void renderDebug(ShapeRenderer renderer) {
+		super.renderDebug(renderer);
+		
+		if (controller != null) {
+			float dir = controller.getLookDir(x,y, level.game.viewport);
+			renderer.setColor(Color.RED);
+			renderer.line(x,y,x + 1000*(float)Math.cos(dir),y + 1000*(float)Math.sin(dir));
+		}
 	}
 
 }

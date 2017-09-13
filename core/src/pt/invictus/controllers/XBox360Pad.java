@@ -1,4 +1,4 @@
-package pt.invictus;
+package pt.invictus.controllers;
 
 import com.badlogic.gdx.controllers.PovDirection;
 

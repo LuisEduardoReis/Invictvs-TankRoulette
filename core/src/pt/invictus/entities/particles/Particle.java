@@ -18,6 +18,8 @@ public class Particle extends Entity {
 		this.lifetime = 1f;
 		
 		this.dscale = 0f;
+		
+		this.collisions = false;
 	}
 	
 	public Particle setDscale(float dscale) {
