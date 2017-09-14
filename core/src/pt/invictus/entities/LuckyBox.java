@@ -10,10 +10,12 @@ import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.entities.particles.Shard;
+import pt.invictus.entities.player.Player;
 
 public class LuckyBox extends Entity {
 
-	float respawn_timer, respawn_delay;
+	public float respawn_timer;
+	float respawn_delay;
 	float despawn_timer, despawn_delay;
 	
 	
@@ -74,11 +76,11 @@ public class LuckyBox extends Entity {
 		Sprites.circle.render(batch, 0, x,y-Main.SIZE/2.5f, 1.25f,0.5f, 0, color.set(0,0,0,0.35f*alpha));
 		sprite.render(batch, 0, x, y + 7*(float)(Math.sin(5*level.t)+1), scale, scale, 0, color.set(1,1,1,alpha));
 		
-		if (Main.DEBUG) {
+		/*if (Main.DEBUG) {
 			Assets.font.getData().setScale(1);
 			Assets.font.setColor(Color.WHITE);
 			Assets.font.draw(batch, "R:"+((int)respawn_timer), x,y+1.5f*Main.SIZE);
 			Assets.font.draw(batch, "D:"+((int)despawn_timer), x,y+Main.SIZE);
-		}
+		}*/
 	}
 }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -20,7 +21,7 @@ import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
-import pt.invictus.entities.Player;
+import pt.invictus.entities.player.*;
 
 public class GameScreen extends ScreenAdapter {
 	Main main;
@@ -42,7 +43,7 @@ public class GameScreen extends ScreenAdapter {
 	
 	public float start_timer, start_delay;
 	public float victory_timer, victory_delay;
-	
+
 	public static String place_names[] = {"1st","2nd","3rd","4th"};
 	
 	
@@ -74,17 +75,19 @@ public class GameScreen extends ScreenAdapter {
 		viewport = new FitViewport(Main.WIDTH, Main.HEIGHT, camera);
 		
 		level = new Level(this, level_name);
-		paused = false;
-				
+		paused = false;		
+		
+		int i = 0;
+		//for(GameController controller : main.controllers) new HumanPlayer(level, controller, i++);
+		for(; i<4; i++) new AIPlayer(level, i);
 		
 		int so = Util.randomRangei(level.spawns.size());
-		for(int i = 0; i < 4; i++) {
-			Vector2 v = level.spawns.get((i+so)%level.spawns.size());
-			GameController c = (i >= main.controllers.size() ? null : main.controllers.get(i));
-			new Player(level, c, i)
-				.setPosition(v.x, v.y)
-				.setDirection(Util.randomRangef(0, 2*(float)Math.PI));		
+		for(Player p : level.players) {
+			Vector2 v = level.spawns.get((p.index+so)%level.spawns.size());
+			p.setPosition(v.x, v.y)
+			 .setDirection(Util.randomRangef(0, 2*(float)Math.PI));
 		}
+		
 	}
 	
 	
@@ -105,11 +108,9 @@ public class GameScreen extends ScreenAdapter {
 			pause_index = Util.stepTo(pause_index, paused ? 1 : 0, 2*delta);
 			
 			// Pause
-			for(Player p : level.players) {
-				if (p.controller == null) continue;
-				
+			for(GameController controller : main.controllers) {				
 				// Start
-				if (p.controller.getKeyPressed(Key.START)) {
+				if (controller.getKeyPressed(Key.START)) {
 					if (victory_timer < 0) {
 						paused ^= true;
 						if (!paused) Main.playSound(Assets.itempickup);
@@ -127,7 +128,7 @@ public class GameScreen extends ScreenAdapter {
 				}
 								
 				// Back
-				if (p.controller.getKeyPressed(Key.BACK)) {
+				if (controller.getKeyPressed(Key.BACK)) {
 					fadeout_timer = fadeout_delay;
 					fadeout_action = new Runnable() {
 						@Override
@@ -143,7 +144,7 @@ public class GameScreen extends ScreenAdapter {
 		// Render
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
+		Gdx.gl.glClearColor(0,0,0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		
 		camera.update();
@@ -287,11 +288,15 @@ public class GameScreen extends ScreenAdapter {
 		
 		
 		if (Main.DEBUG) {
+			Ray ray = viewport.getPickRay(Gdx.input.getX(),Gdx.input.getY());
+			
 			batch.begin();
 				Assets.font.setColor(Color.WHITE);
 				Assets.font.getData().setScale(1);
 				
-				Assets.font.draw(batch,level.entities.size()+"",100,Main.HEIGHT);
+				//Assets.font.draw(batch,level.entities.size()+"",100,Main.HEIGHT);
+				Assets.font.draw(batch,Math.floor(ray.origin.x/s)+" "+Math.floor(ray.origin.y/s),100,Main.HEIGHT);
+
 				Assets.font.draw(batch,Gdx.graphics.getFramesPerSecond()+"",100,Main.HEIGHT-30);
 				
 			batch.end();

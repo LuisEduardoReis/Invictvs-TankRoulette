@@ -1,4 +1,4 @@
-package pt.invictus.entities;
+package pt.invictus.entities.player;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -11,15 +11,16 @@ import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
-import pt.invictus.controllers.GameController;
-import pt.invictus.controllers.GameController.Key;
+import pt.invictus.entities.Bomb;
+import pt.invictus.entities.Bullet;
+import pt.invictus.entities.Entity;
+import pt.invictus.entities.Missile;
 import pt.invictus.entities.particles.Explosion;
 import pt.invictus.entities.particles.Shard;
 
 public class Player extends Entity {
 
 	public int index;
-	public GameController controller;
 	
 	public int lives;
 	public float respawn_timer, respawn_delay;
@@ -35,6 +36,10 @@ public class Player extends Entity {
 	float maxspeed;
 	public float s_health;
 	
+	float look_norm, look_dir;
+	float trigger_val;
+	boolean fire_pressed, aux_pressed;
+	
 	
 	public static Color[] player_colors = {
 			new Color(1,0,0,1),
@@ -43,12 +48,11 @@ public class Player extends Entity {
 			new Color(178f/255,0,1,1),
 	};
 	
-	public Player(Level level, GameController c, int i) {
+	public Player(Level level, int i) {
 		super(level);
 		level.players.add(this);
 		
 		this.index = i;
-		this.controller = c;
 		
 		sprite = Sprites.player[i];		
 		
@@ -100,11 +104,7 @@ public class Player extends Entity {
 			getItem();
 		}
 					
-		if (controller != null && !dead && level.game.start_timer < 0 && level.game.victory_timer < 0) {
-			float look_dir = controller.getLookDir(x, y, level.game.viewport);
-			float look_norm = controller.getLookNormal();
-			float trigger_val = controller.getTrottleAxis();
-			
+		if (!dead && level.game.start_timer < 0 && level.game.victory_timer < 0) {
 			float deadzone = 0.25f;
 			
 			float t_direction = direction;
@@ -128,7 +128,7 @@ public class Player extends Entity {
 				anim_speed = 0;
 				
 			
-			if (controller.getKeyPressed(Key.A)) {
+			if (fire_pressed) {
 				// Shoot
 				if (gun_timer == 0) {
 					gun_timer = gun_delay;
@@ -151,7 +151,7 @@ public class Player extends Entity {
 		
 			
 			// Button X
-			if (controller.getKeyPressed(Key.X)) {
+			if (aux_pressed) {
 				if (Main.DEBUG) getItem();
 			}
 			
@@ -290,11 +290,11 @@ public class Player extends Entity {
 	public void renderDebug(ShapeRenderer renderer) {
 		super.renderDebug(renderer);
 		
-		if (controller != null) {
+		/*if (controller != null) {
 			float dir = controller.getLookDir(x,y, level.game.viewport);
 			renderer.setColor(Color.RED);
 			renderer.line(x,y,x + 1000*(float)Math.cos(dir),y + 1000*(float)Math.sin(dir));
-		}
+		}*/
 	}
 
 }

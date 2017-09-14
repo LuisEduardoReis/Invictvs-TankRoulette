@@ -4,6 +4,7 @@ import pt.invictus.Level;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.entities.particles.Explosion;
+import pt.invictus.entities.player.Player;
 
 public class Missile extends Entity {
 	

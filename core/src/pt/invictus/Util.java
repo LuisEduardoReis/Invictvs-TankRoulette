@@ -1,5 +1,7 @@
 package pt.invictus;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -8,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
 public class Util {
@@ -116,5 +119,18 @@ public class Util {
 
 	public static float interpolate(float x, float a, float b) {
 		return a + x*(b-a);
+	}
+	
+	static ArrayList<Matrix4> matrix_stack = new ArrayList<Matrix4>();
+	static int matrix_stack_index = 0;
+	public static void pushMatrix(Matrix4 mat) {
+		if(matrix_stack.size() <= matrix_stack_index) matrix_stack.add(new Matrix4());
+		matrix_stack.get(matrix_stack_index).set(mat);
+		matrix_stack_index++;
+	}
+	public static Matrix4 popMatrix() {
+		matrix_stack_index--;
+		if (matrix_stack_index < 0) return null;
+		return matrix_stack.get(matrix_stack_index);
 	}
 }

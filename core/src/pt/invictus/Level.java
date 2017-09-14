@@ -13,11 +13,12 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 
+import pt.invictus.ai.TargetSolutionMap;
 import pt.invictus.entities.Diamond;
 import pt.invictus.entities.Entity;
 import pt.invictus.entities.LuckyBox;
 import pt.invictus.entities.MoneyBag;
-import pt.invictus.entities.Player;
+import pt.invictus.entities.player.Player;
 import pt.invictus.screens.GameScreen;
 
 public class Level {
@@ -29,6 +30,7 @@ public class Level {
 	public int map_width, map_height;
 	
 	public Tile[] tiles;
+	public TargetSolutionMap targetSolutionMap[][];
 	
 	public ArrayList<Entity> entities = new ArrayList<Entity>();
 	public ArrayList<Entity> newEntities = new ArrayList<Entity>();
@@ -51,6 +53,7 @@ public class Level {
 		map_height = (Integer) map.getProperties().get("height");
 		tiles = new Tile[map_width*map_height];
 		
+		// Load tiles
 		for(int i = 0; i < tiles.length; i++) tiles[i] = Tile.GROUND;
 		
 		TiledMapTileLayer tiled_tiles = (TiledMapTileLayer) map.getLayers().get("main"); 
@@ -68,7 +71,8 @@ public class Level {
 			}
 			//System.out.println(); System.out.println();
 		}
-		
+	
+		// Load game objects
 		roulette = null;
 		
 		for(MapObject o : map.getLayers().get("objects").getObjects()) {
@@ -96,6 +100,17 @@ public class Level {
 			}
 		}
 		if (spawns.size() == 0) spawns.add(new Vector2(Main.WIDTH/2,Main.HEIGHT/2));
+		
+		
+		// Calculate AI pathfinding
+		targetSolutionMap = new TargetSolutionMap[map_height][map_width];
+		for(int i = 0; i < map_height; i++) {
+			for(int j = 0; j < map_width; j++) {
+				targetSolutionMap[i][j] = new TargetSolutionMap(this, j,i);
+			}
+		}
+		
+
 	} 
 	
 	public Tile getTile(int x, int y) { return (x < 0 || y < 0 || x >= map_width || y >= map_height) ? Tile.GROUND : tiles[y*map_width+x];	}
@@ -190,6 +205,11 @@ public class Level {
 
 	public void renderDebug(ShapeRenderer shapeRenderer) {
 		for(Entity e : entities) e.renderDebug(shapeRenderer);		
+	}
+
+	public TargetSolutionMap getTargetSolutionMap(int x, int y) {
+		if (x < 0 || y < 0 || x >= map_width || y >= map_height) return null;
+		return targetSolutionMap[y][x];
 	}
 	
 	/*

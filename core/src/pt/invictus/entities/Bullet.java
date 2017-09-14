@@ -9,12 +9,14 @@ import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.entities.particles.Explosion;
 import pt.invictus.entities.particles.Spark;
+import pt.invictus.entities.player.Player;
 
 public class Bullet extends Entity {
 
-	int damage;
-	int explosion_damage;
-	int bounces, max_bounces;
+	public int damage;
+	public int explosion_damage;
+	public int bounces;
+	public int max_bounces;
 	
 	public Bullet(Level level, Entity owner) {
 		super(level);

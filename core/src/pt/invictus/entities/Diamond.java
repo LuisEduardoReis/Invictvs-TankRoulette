@@ -9,6 +9,7 @@ import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.entities.particles.Explosion;
+import pt.invictus.entities.player.Player;
 
 public class Diamond extends Entity {
 
@@ -74,10 +75,10 @@ public class Diamond extends Entity {
 		Sprites.circle.render(batch, 0, x,y-Main.SIZE/2.5f, 1f,0.4f, 0, color.set(0,0,0,0.35f*alpha));
 		sprite.render(batch, 0, x, y + 7*(float)(Math.sin(5*level.t)+1), scale*(float)Math.sin(2*level.t), scale, 0, color.set(1,1,1,alpha));
 		
-		if (Main.DEBUG) {
+		/* if (Main.DEBUG) {
 			Assets.font.draw(batch, "R:"+((int)respawn_timer), x,y+1.5f*Main.SIZE);
 			Assets.font.draw(batch, "D:"+((int)despawn_timer), x,y+Main.SIZE);
-		}
+		}*/
 	}
 
 }

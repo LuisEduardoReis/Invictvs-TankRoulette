@@ -12,7 +12,7 @@ import com.badlogic.gdx.controllers.Controllers;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.KeyBoardMouseController;
 import pt.invictus.controllers.Xbox360Controller;
-import pt.invictus.screens.MenuScreen;
+import pt.invictus.screens.*;
 
 public class Main extends Game {
 
@@ -47,7 +47,7 @@ public class Main extends Game {
 		if (controllers.size() > 1) controllers.get(0).setActive(false);		
 		
 		setScreen(new MenuScreen(this));		
-		//setScreen(new ControllerSelectScreen(this));
+		//setScreen(new GameScreen(this,"level.tmx"));
 	}
 	
 	@Override

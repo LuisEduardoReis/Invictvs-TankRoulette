@@ -78,8 +78,12 @@ public class LevelSelectScreen extends ScreenAdapter {
 					if (v < -0.5) index = 0;
 					if (v > 0.5) index = 1;
 				}
+				
+				if (c.getKeyPressed(Key.A)) {
+					index = (index+1)%2;
+				}
 								
-				if (c instanceof Xbox360Controller && c.getKeyPressed(Key.A)) {
+				if (c instanceof Xbox360Controller && c.getKeyPressed(Key.START)) {
 					start = true; break;
 				}
 			}
