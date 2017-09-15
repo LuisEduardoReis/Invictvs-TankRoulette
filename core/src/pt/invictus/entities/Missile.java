@@ -8,6 +8,7 @@ import pt.invictus.entities.player.Player;
 
 public class Missile extends Entity {
 	
+	public static final float MISSILE_RADIUS = Entity.DEFAULT_RADIUS;
 	float damage;
 
 	public Missile(Level level, Entity owner) {

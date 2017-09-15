@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
 import pt.invictus.Level;
 import pt.invictus.Main;
@@ -53,7 +54,11 @@ public class AIPlayer extends Player {
 				target_y = target.y;
 				
 				clearPathToTarget = pathFreeToTarget(target_x, target_x, radius);
-				clearShotToTarget = pathFreeToTarget(target_x, target_y, Bullet.BULLET_RADIUS);
+				
+				float projectileRadius = Bullet.BULLET_RADIUS;
+				if (item != null) projectileRadius = item.radius;
+				clearShotToTarget = pathFreeToTarget(target_x, target_y, projectileRadius);
+				
 				
 				if (clearPathToTarget || (target instanceof Player && clearShotToTarget)) {
 					// Direct path
@@ -140,6 +145,7 @@ public class AIPlayer extends Player {
 				Util.pushMatrix(renderer.getTransformMatrix());
 				renderer.scale(s,s,1);
 				renderer.translate(0.5f, 0.5f, 0);
+				renderer.begin(ShapeType.Filled);
 				
 				TargetSolutionMap map = level.getTargetSolutionMap((int)(x/s), (int)(y/s));			
 				if (map != null) {
@@ -151,9 +157,12 @@ public class AIPlayer extends Player {
 				}
 				
 				renderer.setTransformMatrix(Util.popMatrix());
+				renderer.end();
 				
 				renderer.setColor(Color.RED);
-				renderer.circle(aux_x, aux_y, s/4);
+				renderer.begin(ShapeType.Filled);
+				renderer.circle(aux_x, aux_y, s/8);
+				renderer.end();
 			}
 			
 			// line of sight	
@@ -161,6 +170,7 @@ public class AIPlayer extends Player {
 			float dx = -Bullet.BULLET_RADIUS*(target_y-y)/dist;
 			float dy = Bullet.BULLET_RADIUS*(target_x-x)/dist;
 			
+			renderer.begin(ShapeType.Line);
 			if (pathFreeToTarget(target_x, target_y, Bullet.BULLET_RADIUS)) {
 				renderer.setColor(Color.RED);
 				
@@ -175,8 +185,7 @@ public class AIPlayer extends Player {
 				renderer.line(x + dx, y + dy, x + dx + ld*(target_x-x)/dist, y + dy + ld*(target_y-y)/dist);
 				renderer.line(x - dx, y - dy, x - dx + rd*(target_x-x)/dist, y - dy + rd*(target_y-y)/dist);
 			}
-			
-			
+			renderer.end();		
 			
 			
 			

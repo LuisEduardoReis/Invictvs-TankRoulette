@@ -6,17 +6,15 @@ import com.badlogic.gdx.math.Vector2;
 
 import pt.invictus.Assets;
 import pt.invictus.ColorUtils;
-import pt.invictus.Item;
 import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
-import pt.invictus.entities.Bomb;
 import pt.invictus.entities.Bullet;
 import pt.invictus.entities.Entity;
-import pt.invictus.entities.Missile;
 import pt.invictus.entities.particles.Explosion;
 import pt.invictus.entities.particles.Shard;
+import pt.invictus.items.Item;
 
 public class Player extends Entity {
 
@@ -31,9 +29,9 @@ public class Player extends Entity {
 	
 	public Item item;
 	
-	float bullet_speed;
-	float recoil;
-	float maxspeed;
+	public float bullet_speed;
+	public float recoil;
+	public float maxspeed;
 	public float s_health;
 	
 	float look_norm, look_dir;
@@ -192,63 +190,8 @@ public class Player extends Entity {
 		Main.playSound(Assets.itempickup);
 	}
 
-	public void useItem() {
-		float bspeed;
-		Bullet b;
-					
-		switch(item.type) {
-		case BOUNCE_BULLET:
-			b = (Bullet) new Bullet(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
-			b.dx = (float) (bullet_speed*Math.cos(direction));
-			b.dy = (float) (bullet_speed*Math.sin(direction));
-			b.max_bounces = 3;
-			
-			addEVel((float) (-recoil*Math.cos(direction)), (float) (-recoil*Math.sin(direction)));
-			
-			Main.playSound(Assets.shoot);
-			break;
-		case TRIPLE_BULLET:
-			float br = 10*Util.degToRad;
-			for(int i = 0; i < 3; i++) {
-				b = (Bullet) new Bullet(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
-				b.dx = (float) (bullet_speed*Math.cos(direction+br*(i-1)));
-				b.dy = (float) (bullet_speed*Math.sin(direction+br*(i-1)));
-			}
-			addEVel((float) (-recoil*Math.cos(direction)), (float) (-recoil*Math.sin(direction)));
-			
-			Main.playSound(Assets.shoot);
-			break;
-		case BIG_BULLET:
-			bspeed = 400;
-			b = (Bullet) new Bullet(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
-			b.dx = (float) (bspeed*Math.cos(direction));
-			b.dy = (float) (bspeed*Math.sin(direction));
-			b.scale *= 2;
-			b.radius *= 2;
-			b.damage = 15;
-			b.explosion_damage = 20;
-			
-			addEVel((float) (-1.5f*recoil*Math.cos(direction)), (float) (-1.5f*recoil*Math.sin(direction)));
-			
-			Main.playSound(Assets.shoot);
-			break;			
-		case BOMB:
-			new Bomb(level, this).setPosition(x,y);
-			
-			Main.playSound(Assets.dropbomb);
-			break;
-		case MISSILE:
-			Missile m = (Missile) new Missile(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
-			m.direction = direction;
-			m.speed = bullet_speed;
-			
-			Main.playSound(Assets.shoot);
-			break;			
-		case STAR:
-			star_timer = star_delay;
-			Main.playSound(Assets.star);
-			break;
-		}
+	public void useItem() {					
+		item.use(this);
 		
 		item.quantity--;
 		if (item.quantity <= 0) item = null;
@@ -257,7 +200,13 @@ public class Player extends Entity {
 	public void getItem() {
 		Main.playSound(Assets.itempickup);
 		
-		item = new Item(Item.Type.values()[Util.randomRangei(Item.Type.values().length)]);		
+		try {
+			item = Item.items.get(Util.randomRangei(Item.items.size())).getClass().newInstance();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -289,12 +238,6 @@ public class Player extends Entity {
 	@Override
 	public void renderDebug(ShapeRenderer renderer) {
 		super.renderDebug(renderer);
-		
-		/*if (controller != null) {
-			float dir = controller.getLookDir(x,y, level.game.viewport);
-			renderer.setColor(Color.RED);
-			renderer.line(x,y,x + 1000*(float)Math.cos(dir),y + 1000*(float)Math.sin(dir));
-		}*/
 	}
 
 }

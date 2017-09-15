@@ -7,21 +7,21 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import pt.invictus.Assets;
-import pt.invictus.Item;
 import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
-import pt.invictus.entities.player.*;
+import pt.invictus.entities.player.AIPlayer;
+import pt.invictus.entities.player.Player;
+import pt.invictus.items.Item;
 
 public class GameScreen extends ScreenAdapter {
 	Main main;
@@ -183,10 +183,9 @@ public class GameScreen extends ScreenAdapter {
 				
 				if (p.item_timer > 0) {
 					float period = Util.interpolate(p.item_timer/p.item_delay,0.25f,0.10f);
-					int ii = (int)( (p.item_timer / period) % Item.Type.values().length);
-					Item.Type type = Item.Type.values()[ii];					
-
-					Item.render(type, type.quantity, batch, ix, iy);
+					int ii = (int)( (p.item_timer / period) % Item.items.size());
+					
+					Item.items.get(ii).render(batch, ix, iy);
 				} else if (p.item != null)
 					p.item.render(batch, ix, iy);
 				
@@ -301,9 +300,7 @@ public class GameScreen extends ScreenAdapter {
 				
 			batch.end();
 			
-			shapeRenderer.begin(ShapeType.Line);
-				level.renderDebug(shapeRenderer);
-			shapeRenderer.end();	
+			level.renderDebug(shapeRenderer);	
 		}
 		
 	}

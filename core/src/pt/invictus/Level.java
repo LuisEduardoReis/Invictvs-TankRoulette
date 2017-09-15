@@ -62,16 +62,10 @@ public class Level {
 		for(int yy = 0; yy<map_height; yy++) {
 			for(int xx = 0; xx<map_width; xx++) {
 				TiledMapTileLayer.Cell cell = tiled_tiles.getCell(xx, yy);
-				
-				/*System.out.print("\t"+((cell == null) ? " " : 
-					"("+cell.getTile().getProperties().get("solid")+")" 
-						));*/
 				if (cell != null) {
-					//int cid = cell.getTile().getId()-1;
 					tiles[yy*map_width+xx] = Tile.WALL;
 				}
 			}
-			//System.out.println(); System.out.println();
 		}
 	
 		// Load game objects
@@ -124,6 +118,7 @@ public class Level {
 		
 		t += delta;
 		
+		// Win condition and ranking
 		if (game.victory_timer < 0 && players.size() > 1) {
 			int alive = 0; Player last = null;
 			for(Player p : players) 
@@ -132,12 +127,15 @@ public class Level {
 					last = p;
 				}
 			if (alive <= 1) {
-				if (last != null) ranking.add(last);
+				if (last != null) {
+					last.invulnerable = true;
+					ranking.add(last);
+				}
 				game.victory_timer = game.victory_delay;
 			}
 		}
 		
-		
+		// Entity updates
 		for(Entity e : entities) e.preupdate(delta);		
 		for(Entity e : entities) e.update(delta);
 		
@@ -156,6 +154,7 @@ public class Level {
 			}
 		}
 		
+		// New Entities
 		entities.addAll(newEntities);
 		newEntities.clear();
 		
@@ -173,12 +172,15 @@ public class Level {
 			}
 		}
 		
+		// Remove Entities
 		for(int i = 0; i < entities.size(); i++) 
 			if (entities.get(i).remove)
 				entities.remove(i).destroy();
 		
+		// Level Collision
 		for(Entity e : entities) e.levelCollision();
 		
+		// Depth sort
 		Collections.sort(entities, Entity.zComparator);
 		
 		// Sound

@@ -6,6 +6,7 @@ import java.util.Comparator;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
 import pt.invictus.Level;
 import pt.invictus.Main;
@@ -14,6 +15,8 @@ import pt.invictus.Tile;
 import pt.invictus.Util;
 
 public class Entity {
+
+	public static final float DEFAULT_RADIUS = Main.SIZE/3;
 
 	public Level level;
 	
@@ -27,6 +30,7 @@ public class Entity {
 	
 	public boolean visible;
 	public boolean dead;
+	public boolean invulnerable;
 	public boolean remove;
 	public boolean collisions, levelCollisions, entityCollisions, imovable;
 	
@@ -67,6 +71,7 @@ public class Entity {
 		
 		this.visible = true;
 		this.dead = false;
+		this.invulnerable = false;
 		this.remove = false;
 		this.collisions = true;
 		this.levelCollisions = false;
@@ -82,7 +87,7 @@ public class Entity {
 		this.direction = 0;
 		this.speed = 0;
 		this.scale = 1;
-		this.radius = Main.SIZE/3;	
+		this.radius = DEFAULT_RADIUS;	
 		this.health = 100;
 		this.full_health = this.health;
 		
@@ -156,7 +161,9 @@ public class Entity {
 	public void renderDebug(ShapeRenderer renderer) {
 		if (collisions) {
 			renderer.setColor(Color.WHITE);
+			renderer.begin(ShapeType.Line);
 			renderer.ellipse(this.x - this.radius, this.y - this.radius, 2*this.radius, 2*this.radius);
+			renderer.end();
 		}
 	}
 	
@@ -185,12 +192,13 @@ public class Entity {
 	}
 
 	public void damage(float damage) {
+		if (invulnerable) return;
+		
 		health = Util.stepTo(health, 0, damage);
 		if (!dead) {
 			damage_anim_timer = Math.max(damage_anim_timer, damage_anim_delay);
 			bar_anim_timer = Math.max(bar_anim_timer, bar_anim_delay);
-		}
-		
+		}		
 	}
 	
 	public void repelRigid(Entity o) {
@@ -215,11 +223,21 @@ public class Entity {
 	public Entity addEVel(float x, float y) {
 		this.edx += x; this.edy += y; return this;
 	}
+	public Entity addEVelDir(float dir, float val) {
+		this.edx += (float) (val*Math.cos(dir)); 
+		this.edy += (float) (val*Math.sin(dir)); 
+		return this;
+	}
 	public Entity setBlend(Color blend) {
 		this.blend = blend; return this;
 	}
 	public Entity setDirection(float direction) { 
 		this.direction = direction; return this; 
+	}
+	public Entity setDVel(float dir, float val) {
+		this.dx = (float) (val*Math.cos(dir));
+		this.dy = (float) (val*Math.sin(dir));
+		return this;
 	}
 
 	public void levelCollision() {
