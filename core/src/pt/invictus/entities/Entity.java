@@ -1,5 +1,6 @@
 package pt.invictus.entities;
 
+import java.util.Collection;
 import java.util.Comparator;
 
 import com.badlogic.gdx.graphics.Color;
@@ -291,5 +292,39 @@ public class Entity {
 			return Float.compare(o1.z, o2.z);
 		}		
 	};
+	
+	public interface EntityEvaluator {
+		public boolean skip(Entity e);
+	};
+	public static EntityEvaluator aliveEvaluator = new EntityEvaluator() {
+		@Override
+		public boolean skip(Entity e) {
+			return e.dead;
+		}		
+	};
+	
 
+	public static Entity findClosest(Collection<? extends Entity> entities, float x, float y, Class<? extends Entity> clazz, Entity exclude, EntityEvaluator eval) {
+		Entity res = null;
+		float res_dist = Float.MAX_VALUE;
+		for(Entity e : entities) {
+			if (exclude == e) continue;
+			if (clazz != null && !clazz.isInstance(e)) continue;
+			if (eval != null && eval.skip(e)) continue;			
+			
+			float dist = Util.pointDistanceSqr(x, y, e.x, e.y);
+			if (dist < res_dist) {
+				res_dist = dist;
+				res = e;
+			}
+		}
+		return res;
+	}
+	public static Entity findClosest(Collection<? extends Entity> entities, float x, float y, Class<? extends Entity> clazz) {
+		return findClosest(entities, x,y,clazz,null, null);
+	}
+	
+	public Entity findClosest(Collection<? extends Entity> entities, Class<? extends Entity> clazz, EntityEvaluator eval) {
+		return Entity.findClosest(entities, x,y,clazz, this, eval);
+	}
 }

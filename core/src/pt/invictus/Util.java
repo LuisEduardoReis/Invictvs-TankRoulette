@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.math.Affine2;
@@ -132,5 +133,21 @@ public class Util {
 		matrix_stack_index--;
 		if (matrix_stack_index < 0) return null;
 		return matrix_stack.get(matrix_stack_index);
+	}
+	
+	public static void drawWidthLine(ShapeRenderer renderer, float x1,float y1, float x2,float y2, float width) {
+		
+		float dist = Util.pointDistance(x1, y1, x2, y2);
+		float dir = Util.pointDirection(x1, y1, x2, y2);
+		
+		Util.pushMatrix(renderer.getTransformMatrix());
+		
+		renderer.translate(x1, y1, 0);
+		renderer.rotate(0,0,1,dir*radToDeg);
+
+		renderer.rect(-width/2,-width/2,dist+width,width);
+		
+		
+		renderer.setTransformMatrix(Util.popMatrix());		
 	}
 }

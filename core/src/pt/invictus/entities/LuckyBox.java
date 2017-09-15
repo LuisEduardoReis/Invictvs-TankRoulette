@@ -21,6 +21,7 @@ public class LuckyBox extends Entity {
 	
 	public LuckyBox(Level level) {
 		super(level);
+		level.pickups.add(this);
 		
 		respawn_delay = 25;
 		respawn_timer = Util.randomRangef(0,respawn_delay);

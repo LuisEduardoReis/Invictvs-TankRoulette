@@ -37,7 +37,7 @@ public class Player extends Entity {
 	public float s_health;
 	
 	float look_norm, look_dir;
-	float trigger_val;
+	float trottle_val;
 	boolean fire_pressed, aux_pressed;
 	
 	
@@ -114,8 +114,8 @@ public class Player extends Entity {
 				direction = Util.stepToDirection(direction, t_direction, (float) (2*Math.PI*delta)*0.5f);
 			}
 			
-			if (Math.abs(trigger_val) > deadzone) { 
-				speed = (star_timer > 0 ? 1.25f : 1) * maxspeed * Math.abs(trigger_val);
+			if (Math.abs(trottle_val) > deadzone) { 
+				speed = (star_timer > 0 ? 1.25f : 1) * maxspeed * Math.abs(trottle_val);
 			} else
 				speed = 0;
 			

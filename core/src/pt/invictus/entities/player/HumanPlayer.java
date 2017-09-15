@@ -1,5 +1,7 @@
 package pt.invictus.entities.player;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 import pt.invictus.Level;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
@@ -21,12 +23,17 @@ public class HumanPlayer extends Player {
 		if (controller != null) {
 			look_dir = controller.getLookDir(x, y, level.game.viewport);
 			look_norm = controller.getLookNormal();
-			trigger_val = controller.getTrottleAxis();
+			trottle_val = controller.getTrottleAxis();
 			
 			fire_pressed = controller.getKeyPressed(Key.A);
 			aux_pressed = controller.getKeyPressed(Key.X);
 		}
 		
 		super.update(delta);
+	}
+	
+	@Override
+	public void renderDebug(ShapeRenderer renderer) {
+		super.renderDebug(renderer);
 	}
 }

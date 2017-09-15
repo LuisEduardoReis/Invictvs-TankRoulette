@@ -19,6 +19,7 @@ public class Diamond extends Entity {
 	
 	public Diamond(Level level) {
 		super(level);
+		level.pickups.add(this);
 		
 		respawn_delay = 60;
 		respawn_timer = Util.randomRangef(0,respawn_delay);

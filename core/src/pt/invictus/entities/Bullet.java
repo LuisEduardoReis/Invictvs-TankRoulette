@@ -13,6 +13,7 @@ import pt.invictus.entities.player.Player;
 
 public class Bullet extends Entity {
 
+	public static final float BULLET_RADIUS = Main.SIZE/2 * 0.25f;
 	public int damage;
 	public int explosion_damage;
 	public int bounces;
@@ -25,7 +26,7 @@ public class Bullet extends Entity {
 		explosion_damage = 0;
 		
 		sprite = Sprites.bullet;
-		radius = Main.SIZE/2 * 0.25f;
+		radius = BULLET_RADIUS;
 		
 		bounces = 0;
 		max_bounces = 0;

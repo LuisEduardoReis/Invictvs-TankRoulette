@@ -36,6 +36,8 @@ public class Level {
 	public ArrayList<Entity> newEntities = new ArrayList<Entity>();
 	
 	public ArrayList<Player> players = new ArrayList<Player>();
+	public ArrayList<Entity> pickups = new ArrayList<Entity>();
+	
 	
 	public ArrayList<Vector2> spawns = new ArrayList<Vector2>();
 	public Vector2 roulette;
@@ -113,7 +115,7 @@ public class Level {
 
 	} 
 	
-	public Tile getTile(int x, int y) { return (x < 0 || y < 0 || x >= map_width || y >= map_height) ? Tile.GROUND : tiles[y*map_width+x];	}
+	public Tile getTile(int x, int y) { return (x < 0 || y < 0 || x >= map_width || y >= map_height) ? Tile.WALL : tiles[y*map_width+x];	}
 	public void setTile(int x, int y, Tile tile) { if (x >= 0 && y >= 0 && x < map_width && y < map_height) tiles[y*map_width+x] = tile; }
 	
 	
@@ -212,22 +214,79 @@ public class Level {
 		return targetSolutionMap[y][x];
 	}
 	
-	/*
-	public boolean lineOfSight(float x1,float y1, float x2,float y2) {
-		int minx = (int) Math.floor(Math.min(x1,x2));
-		int maxx = (int) Math.ceil(Math.max(x1,x2));
-		int miny = (int) Math.floor(Math.min(y1,y2));
-		int maxy = (int) Math.ceil(Math.max(y1,y2));
+	
+	public float raycast(float rayPosX,float rayPosY, float rayDirX,float rayDirY) {
 		
-		for(int y = miny; y < maxy; y++) {
-			for(int x = minx; x < maxx; x++) {
-				Tile t = getTile(x, y);
-				if (t == Tile.GROUND) continue;
-				
-				
-			}
-		}
+		rayPosX /= Main.SIZE;
+		rayPosY /= Main.SIZE;
 		
-		return false;
-	}*/
+		//which box of the map we're in
+	    int mapX = (int) (rayPosX);
+	    int mapY = (int) (rayPosY);
+
+	    //length of ray from current position to next x or y-side
+	    float sideDistX;
+	    float sideDistY;
+
+	    //length of ray from one x or y-side to next x or y-side
+	    float deltaDistX = (float) Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+	    float deltaDistY = (float) Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+
+	    //what direction to step in x or y-direction (either +1 or -1)
+	    int stepX;
+	    int stepY;
+
+	    boolean side = false; //was a NS or a EW wall hit?
+	      
+	    if (rayDirX < 0) {
+	    	stepX = -1;
+	        sideDistX = (rayPosX - mapX) * deltaDistX;
+	    } else {
+	        stepX = 1;
+	        sideDistX = (mapX + 1.0f - rayPosX) * deltaDistX;
+	    }
+	    if (rayDirY < 0) {
+	        stepY = -1;
+	        sideDistY = (rayPosY - mapY) * deltaDistY;
+	    } else {
+	        stepY = 1;
+	        sideDistY = (mapY + 1.0f - rayPosY) * deltaDistY;
+	    }
+	      
+	    //perform DDA
+	    int limit = 100;
+	    while (true) {	    	
+	    	//jump to next map square, OR in x-direction, OR in y-direction
+	        if (sideDistX < sideDistY) {
+	        	
+	          sideDistX += deltaDistX;
+	          mapX += stepX;
+	          side = false;
+	          
+	        } else {
+	        	
+	          sideDistY += deltaDistY;
+	          mapY += stepY;
+	          side = true;
+	          
+	        }
+	        
+	        //Check if ray has hit a wall
+	        if (getTile(mapX,mapY) != Tile.GROUND) break;
+	        
+	        //Check iteration limit
+	        if (limit-- <= 0) return Float.MAX_VALUE; 
+	    }
+	      
+	    if (!side) 
+	    	return Main.SIZE * (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
+	    else           
+	    	return Main.SIZE * (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
+	}
+	
+	public boolean lineOfSight(float x1, float y1, float x2, float y2) {
+		float dist = Util.pointDistance(x1, y1, x2, y2);
+		float raycast = raycast(x1,y1,(x2-x1)/dist, (y2-y1)/dist);
+		return dist < raycast;
+	}
 }
