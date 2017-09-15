@@ -2,6 +2,7 @@ package pt.invictus.entities.player;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 
 import pt.invictus.Assets;
 import pt.invictus.ColorUtils;
@@ -179,9 +180,8 @@ public class Player extends Entity {
 	
 	public void respawn() {
 		health = full_health;
-		//Vector2 s = level.spawns.get(Util.randomRangei(level.spawns.size()));
-		//setPosition(s.x, s.y);
-		spawnRandomly();
+		Vector2 s = level.spawns.get(Util.randomRangei(level.spawns.size()));
+		setPosition(s.x, s.y);
 		dead = false;
 		levelCollisions = true;
 		

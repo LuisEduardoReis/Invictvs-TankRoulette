@@ -50,6 +50,8 @@ public class LuckyBox extends Entity implements Respawnable {
 			}
 		}
 		
+		collisions = (respawn_timer == 0);
+		
 		alpha = Util.clamp(1-respawn_timer,0,1) * Util.clamp(despawn_delay - despawn_timer,0,1); 
 	}
 	
@@ -77,7 +79,7 @@ public class LuckyBox extends Entity implements Respawnable {
 		Sprites.circle.render(batch, 0, x,y-Main.SIZE/2.5f, 1.25f,0.5f, 0, color.set(0,0,0,0.35f*alpha));
 		sprite.render(batch, 0, x, y + 7*(float)(Math.sin(5*level.t)+1), scale, scale, 0, color.set(1,1,1,alpha));
 		
-		/*if (Main.DEBUG) {
+		/* if (Main.DEBUG) {
 			Assets.font.getData().setScale(1);
 			Assets.font.setColor(Color.WHITE);
 			Assets.font.draw(batch, "R:"+((int)respawn_timer), x,y+1.5f*Main.SIZE);

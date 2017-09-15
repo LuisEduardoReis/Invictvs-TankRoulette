@@ -19,6 +19,7 @@ public class Main extends Game {
 	public static boolean DEBUG = true;
 	public static boolean MUSIC = false;
 	public static boolean SOUND = true;
+	public static boolean PARTICLES = true;
 	
 	public static final int SIZE = 60;
 	public static final int WIDTH = 1920;
@@ -57,7 +58,8 @@ public class Main extends Game {
 		super.render();
 		
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) Gdx.app.exit();
-		if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) DEBUG ^= true;		
+		if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) DEBUG ^= true;
+		if (Gdx.input.isKeyJustPressed(Input.Keys.F2)) PARTICLES ^= true;
 		if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) start();
 		
 		if (Gdx.input.isKeyJustPressed(Input.Keys.M)) MUSIC ^= true;

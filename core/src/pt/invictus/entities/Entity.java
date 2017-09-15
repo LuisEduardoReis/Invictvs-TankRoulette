@@ -159,7 +159,7 @@ public class Entity {
 	}
 	
 	public void renderDebug(ShapeRenderer renderer) {
-		if (collisions) {
+		if (collisions && !dead) {
 			renderer.setColor(Color.WHITE);
 			renderer.begin(ShapeType.Line);
 			renderer.ellipse(this.x - this.radius, this.y - this.radius, 2*this.radius, 2*this.radius);

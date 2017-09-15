@@ -50,6 +50,8 @@ public class Diamond extends Entity implements Respawnable {
 			}
 		}
 		
+		collisions = (respawn_timer == 0);
+		
 		alpha = Util.clamp(1-respawn_timer,0,1) * Util.clamp(despawn_delay - despawn_timer,0,1); 
 	}
 	

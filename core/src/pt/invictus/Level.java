@@ -176,7 +176,7 @@ public class Level {
 		// Remove Entities
 		for(int i = 0; i < entities.size(); i++) 
 			if (entities.get(i).remove)
-				entities.remove(i).destroy();
+				entities.remove(i--).destroy();
 		
 		// Level Collision
 		for(Entity e : entities) e.levelCollision();
@@ -206,7 +206,7 @@ public class Level {
 		for(Entity e : entities) e.render(batch);		
 	}
 	
-	public void addEntity(Entity entity) { 	newEntities.add(entity); }
+	public void addEntity(Entity entity) { newEntities.add(entity); }
 
 	public void renderDebug(ShapeRenderer shapeRenderer) {
 		for(Entity e : entities) e.renderDebug(shapeRenderer);		

@@ -24,7 +24,6 @@ import pt.invictus.ai.TargetSolutionMap;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
 import pt.invictus.entities.player.AIPlayer;
-import pt.invictus.entities.player.HumanPlayer;
 import pt.invictus.entities.player.Player;
 import pt.invictus.items.Item;
 
@@ -83,8 +82,8 @@ public class GameScreen extends ScreenAdapter {
 		paused = false;		
 		
 		int i = 0;
-		for(GameController controller : main.controllers) new HumanPlayer(level, controller, i++);
-		//for(; i<4; i++) new AIPlayer(level, i);
+		//for(GameController controller : main.controllers) new HumanPlayer(level, controller, i++);
+		for(; i<4; i++) new AIPlayer(level, i);
 		
 		int so = Util.randomRangei(level.spawns.size());
 		for(Player p : level.players) {
@@ -205,9 +204,6 @@ public class GameScreen extends ScreenAdapter {
 				}
 				
 				// health
-				/*Assets.font.setColor(color);
-				Assets.font.getData().setScale(1);
-				Assets.font.draw(batch, "H:"+((int)p.health)+"/100", x+2.75f*s, 3f*s);*/
 				float w = 250;
 				batch.setColor(Color.GRAY);				
 				Util.drawCentered(batch, Sprites.rect.frames.get(0), x+2.5f*s-6, 2.85f*s, w+12, 46, 0, false, true);

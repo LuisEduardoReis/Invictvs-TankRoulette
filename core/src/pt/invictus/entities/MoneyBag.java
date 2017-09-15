@@ -41,6 +41,7 @@ public class MoneyBag extends Entity implements Respawnable {
 		alpha = Util.clamp(1 - respawn_timer, 0, 1);
 		
 		entityCollisions = (respawn_timer == 0);
+		collisions = (respawn_timer == 0);
 	}
 	
 	@Override

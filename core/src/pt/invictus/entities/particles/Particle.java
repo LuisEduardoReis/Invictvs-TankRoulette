@@ -1,6 +1,7 @@
 package pt.invictus.entities.particles;
 
 import pt.invictus.Level;
+import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.entities.Entity;
@@ -10,7 +11,7 @@ public class Particle extends Entity {
 	public float lifetime;
 	public float dscale;
 	
-	public Particle(Level level) {
+	public Particle(Level level) {		
 		super(level);
 		
 		this.sprite = Sprites.wave;
@@ -20,6 +21,8 @@ public class Particle extends Entity {
 		this.dscale = 0f;
 		
 		this.collisions = false;
+		
+		this.remove = !Main.PARTICLES;
 	}
 	
 	public Particle setDscale(float dscale) {
