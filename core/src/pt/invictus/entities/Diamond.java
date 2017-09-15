@@ -11,7 +11,7 @@ import pt.invictus.Util;
 import pt.invictus.entities.particles.Explosion;
 import pt.invictus.entities.player.Player;
 
-public class Diamond extends Entity {
+public class Diamond extends Entity implements Respawnable {
 
 	float respawn_timer, respawn_delay;
 	float despawn_timer, despawn_delay;
@@ -82,4 +82,6 @@ public class Diamond extends Entity {
 		}*/
 	}
 
+	@Override
+	public float getRespawnTimer() { return respawn_timer; }
 }

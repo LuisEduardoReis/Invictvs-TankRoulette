@@ -2,10 +2,10 @@ package pt.invictus.entities.player;
 
 import java.util.ArrayList;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Vector2;
 
 import pt.invictus.Level;
 import pt.invictus.Main;
@@ -15,6 +15,8 @@ import pt.invictus.ai.TargetSolutionMap;
 import pt.invictus.entities.Bullet;
 import pt.invictus.entities.Entity;
 import pt.invictus.entities.LuckyBox;
+import pt.invictus.entities.MoneyBag;
+import pt.invictus.entities.Respawnable;
 
 public class AIPlayer extends Player {
 
@@ -22,49 +24,71 @@ public class AIPlayer extends Player {
 		super(level, i);
 	}
 	
-	float target_x, target_y;
-	float aux_x, aux_y;
+	Entity target = null;
+	Vector2 local_target = new Vector2();
 	boolean pathfinding;
 	
 	@Override
 	public void update(float delta) {
 		
+		target = null;
 		pathfinding = false;
 		if (!dead) {
 		
-			Player closestAlivePlayer = (Player) findClosest(level.players, Player.class, Entity.aliveEvaluator);
-			LuckyBox closestActiveLuckyBox = (LuckyBox) findClosest(level.pickups, LuckyBox.class, new EntityEvaluator() {
-				@Override
-				public boolean skip(Entity e) {
-					return ((LuckyBox) e).respawn_timer > 0;
-				}
-			});
+			final Player closestAlivePlayer = (Player) findClosest(level.players, Player.class, Entity.aliveEvaluator);
+			LuckyBox closestActiveLuckyBox = (LuckyBox) findClosest(level.pickups, LuckyBox.class, Respawnable.available);
+			MoneyBag closestUsefulMoneyBag = null;
+			if (closestAlivePlayer != null) 
+				closestUsefulMoneyBag = (MoneyBag) Entity.findClosest(level.moneybags, closestAlivePlayer.x, closestAlivePlayer.y, null, null, new EntityEvaluator() {
+					@Override
+					public boolean skip(Entity e) {
+						MoneyBag m = (MoneyBag) e;
+						return m.getRespawnTimer() > 0 || Util.pointDistanceSqr(e.x, e.y, closestAlivePlayer.x, closestAlivePlayer.y) > MoneyBag.EXPLOSION_RADIUS*MoneyBag.EXPLOSION_RADIUS;
+					}
+				});
 			
-			Entity target = null;
+			
+			
+			boolean shootTarget = false;
+			boolean moveTowardsTarget = false;			
 			boolean clearPathToTarget = false;
 			boolean clearShotToTarget = false;
 			
-			if (closestActiveLuckyBox != null && item_timer <= 0 && item == null && star_timer <= 0) 
-				target = closestActiveLuckyBox;
+			// Things we want to shoot
+			shootTarget = true;			
+			if (closestUsefulMoneyBag != null)
+				target = closestUsefulMoneyBag;				
 			else if (closestAlivePlayer != null)
-				target = closestAlivePlayer;		
+				target = closestAlivePlayer;
+			else
+				shootTarget = false;
 			
-			if (target != null) {
-				target_x = target.x;
-				target_y = target.y;
-				
-				clearPathToTarget = pathFreeToTarget(target_x, target_x, radius);
-				
+			// Whether we can shoot then now
+			if (target != null && shootTarget) {
 				float projectileRadius = Bullet.BULLET_RADIUS;
 				if (item != null) projectileRadius = item.radius;
-				clearShotToTarget = pathFreeToTarget(target_x, target_y, projectileRadius);
+				clearShotToTarget = pathFreeToTarget(target.x, target.y, projectileRadius);
+				
+				// If not, we need to move towards them
+				if (!clearShotToTarget) {
+					shootTarget = false;
+					moveTowardsTarget = true;
+				}
+			}			
+			
+			// Thing we want to move towards
+			if (!clearShotToTarget && closestActiveLuckyBox != null && item_timer <= 0 && item == null && star_timer <= 0) { 
+				target = closestActiveLuckyBox;
+				shootTarget = false;
+				moveTowardsTarget = true;
+			}
+			
+			if (target != null) {
+								
+				clearPathToTarget = pathFreeToTarget(target.x, target.y, radius);
 				
 				
-				if (clearPathToTarget || (target instanceof Player && clearShotToTarget)) {
-					// Direct path
-					aux_x = target_x;
-					aux_y = target_y;
-				} else {
+				if (!clearPathToTarget && !clearShotToTarget) {
 					// AI path
 					pathfinding = true;
 					
@@ -72,7 +96,7 @@ public class AIPlayer extends Player {
 					float s = Main.SIZE;
 					TargetSolutionMap map = level.getTargetSolutionMap((int)(x/s), (int)(y/s));
 					if (map != null) {
-						Node n = map.getNode((int)(target_x/s),(int)(target_y/s));
+						Node n = map.getNode((int)(target.x/s),(int)(target.y/s));
 						while(n != null) {
 							path.add(n);
 							n = n.parent;
@@ -80,18 +104,22 @@ public class AIPlayer extends Player {
 					}
 					if (path.size() > 1) {
 						Node n = path.get(path.size()-2);
-						aux_x = s*(n.x+0.5f);
-						aux_y = s*(n.y+0.5f);
-					} else {
-						aux_x = target_x;
-						aux_y = target_y;
+						local_target.set(s*(n.x+0.5f), s*(n.y+0.5f));
 					}
 				}
 			}
 			
 			boolean hasTarget = (target != null);
-			float distanceToTarget = Util.pointDistance(x, y, target_x, target_y);
-			float target_dir = Util.pointDirection(x, y, aux_x, aux_y);
+			float distanceToTarget = hasTarget ? Util.pointDistance(x, y, target.x, target.y) : Float.MAX_VALUE;
+			
+			float target_dir;
+			if (!hasTarget) 
+				target_dir = 0;
+			else if (pathfinding)
+				target_dir = Util.pointDirection(x, y, local_target.x, local_target.y);
+			else
+				target_dir = Util.pointDirection(x, y, target.x, target.y);
+			
 			float target_dir_diff = Util.angleDifference(direction, target_dir); 
 			boolean headedRightWay = Math.abs(target_dir_diff) < 30*Util.degToRad;
 			boolean aimedTowardsTarget = hasTarget && Math.abs(Math.sin(target_dir_diff)*distanceToTarget) < target.radius;
@@ -100,17 +128,14 @@ public class AIPlayer extends Player {
 			look_dir = target_dir;
 			look_norm = hasTarget ? 1 : 0;
 			
-			if (hasTarget)
-				if (target instanceof Player && clearShotToTarget)
-					trottle_val = 0;
-				else if (headedRightWay)
-					trottle_val = 1;
+			if (moveTowardsTarget && headedRightWay)
+				trottle_val = 1;
 			else
 				trottle_val = 0;
 			
-			if (hasTarget && target instanceof Player && clearShotToTarget && aimedTowardsTarget)
+			if (shootTarget && clearShotToTarget && aimedTowardsTarget)
 				fire_pressed = true;
-			else 
+			else
 				fire_pressed = false;
 			
 			aux_pressed = false;			
@@ -135,13 +160,14 @@ public class AIPlayer extends Player {
 		super.renderDebug(renderer);
 		if (dead) return;
 		
-		float s = Main.SIZE;
-		int mcx = (int)(target_x/s);
-		int mcy = (int)(target_y/s);
-		if (mcx >= 0 && mcx < level.map_width-1 && mcy >= 0 && mcy < level.map_height-1) {
+		if (target != null) {
+			
+			float s = Main.SIZE;
+			int mcx = (int)(target.x/s);
+			int mcy = (int)(target.y/s);
 		
 			if (pathfinding) {
-				renderer.setColor(Player.player_colors[index]);
+				renderer.setColor(Player.player_colors[index % Player.player_colors.length]);
 				Util.pushMatrix(renderer.getTransformMatrix());
 				renderer.scale(s,s,1);
 				renderer.translate(0.5f, 0.5f, 0);
@@ -161,32 +187,31 @@ public class AIPlayer extends Player {
 				
 				renderer.setColor(Color.RED);
 				renderer.begin(ShapeType.Filled);
-				renderer.circle(aux_x, aux_y, s/8);
+				renderer.circle(local_target.x, local_target.y, s/8);
 				renderer.end();
 			}
 			
 			// line of sight	
-			float dist = Util.pointDistance(x, y, target_x, target_y);
-			float dx = -Bullet.BULLET_RADIUS*(target_y-y)/dist;
-			float dy = Bullet.BULLET_RADIUS*(target_x-x)/dist;
+			float dist = Util.pointDistance(x, y, target.x, target.y);
+			float dx = -Bullet.BULLET_RADIUS*(target.y-y)/dist;
+			float dy = Bullet.BULLET_RADIUS*(target.x-x)/dist;
 			
 			renderer.begin(ShapeType.Line);
-			if (pathFreeToTarget(target_x, target_y, Bullet.BULLET_RADIUS)) {
+			if (pathFreeToTarget(target.x, target.y, Bullet.BULLET_RADIUS)) {
 				renderer.setColor(Color.RED);
 				
-				renderer.line(x + dx, y + dy, target_x + dx, target_y + dy);
-				renderer.line(x - dx, y - dy, target_x - dx, target_y - dy);
+				renderer.line(x + dx, y + dy, target.x + dx, target.y + dy);
+				renderer.line(x - dx, y - dy, target.x - dx, target.y - dy);
 			}	
 			else {
 				renderer.setColor(Color.WHITE); 
 				
-				float ld = level.raycast(x + dx, y + dy, (target_x-x)/dist, (target_y-y)/dist);
-				float rd = level.raycast(x - dx, y - dy, (target_x-x)/dist, (target_y-y)/dist);
-				renderer.line(x + dx, y + dy, x + dx + ld*(target_x-x)/dist, y + dy + ld*(target_y-y)/dist);
-				renderer.line(x - dx, y - dy, x - dx + rd*(target_x-x)/dist, y - dy + rd*(target_y-y)/dist);
+				float ld = level.raycast(x + dx, y + dy, (target.x-x)/dist, (target.y-y)/dist);
+				float rd = level.raycast(x - dx, y - dy, (target.x-x)/dist, (target.y-y)/dist);
+				renderer.line(x + dx, y + dy, x + dx + ld*(target.x-x)/dist, y + dy + ld*(target.y-y)/dist);
+				renderer.line(x - dx, y - dy, x - dx + rd*(target.x-x)/dist, y - dy + rd*(target.y-y)/dist);
 			}
 			renderer.end();		
-			
 			
 			
 		}

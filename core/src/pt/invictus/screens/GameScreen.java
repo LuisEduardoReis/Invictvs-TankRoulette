@@ -1,12 +1,14 @@
 package pt.invictus.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -17,9 +19,12 @@ import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
 import pt.invictus.Util;
+import pt.invictus.ai.Node;
+import pt.invictus.ai.TargetSolutionMap;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
 import pt.invictus.entities.player.AIPlayer;
+import pt.invictus.entities.player.HumanPlayer;
 import pt.invictus.entities.player.Player;
 import pt.invictus.items.Item;
 
@@ -78,14 +83,14 @@ public class GameScreen extends ScreenAdapter {
 		paused = false;		
 		
 		int i = 0;
-		//for(GameController controller : main.controllers) new HumanPlayer(level, controller, i++);
-		for(; i<4; i++) new AIPlayer(level, i);
+		for(GameController controller : main.controllers) new HumanPlayer(level, controller, i++);
+		//for(; i<4; i++) new AIPlayer(level, i);
 		
 		int so = Util.randomRangei(level.spawns.size());
 		for(Player p : level.players) {
 			Vector2 v = level.spawns.get((p.index+so)%level.spawns.size());
-			p.setPosition(v.x, v.y)
-			 .setDirection(Util.randomRangef(0, 2*(float)Math.PI));
+			p.setPosition(v.x, v.y);
+			p.setDirection(Util.randomRangef(0, 2*(float)Math.PI));
 		}
 		
 	}
@@ -206,7 +211,7 @@ public class GameScreen extends ScreenAdapter {
 				float w = 250;
 				batch.setColor(Color.GRAY);				
 				Util.drawCentered(batch, Sprites.rect.frames.get(0), x+2.5f*s-6, 2.85f*s, w+12, 46, 0, false, true);
-				batch.setColor(Player.player_colors[p.index]);
+				batch.setColor(Player.player_colors[p.index % Player.player_colors.length]);
 				Util.drawCentered(batch, Sprites.rect.frames.get(0), x+2.5f*s, 2.85f*s, w*p.s_health/p.full_health, 30, 0, false, true);
 				
 				// lives
@@ -265,7 +270,7 @@ public class GameScreen extends ScreenAdapter {
 					
 					if (i == 0) sc += 1*Math.sin(4*t);
 					Assets.font.getData().setScale(sc); 
-					Util.drawTitle(batch, Assets.font, place_names[i], x,y, a);
+					Util.drawTitle(batch, Assets.font, place_names[i % place_names.length], x,y, a);
 					
 					p.sprite.render(batch, 0,  x + 5 *s,y-0.15f*s,  sc,sc, (i == 0 ? 90 : 0), color.set(1,1,1,a));
 				}
@@ -293,12 +298,34 @@ public class GameScreen extends ScreenAdapter {
 				Assets.font.setColor(Color.WHITE);
 				Assets.font.getData().setScale(1);
 				
-				//Assets.font.draw(batch,level.entities.size()+"",100,Main.HEIGHT);
-				Assets.font.draw(batch,Math.floor(ray.origin.x/s)+" "+Math.floor(ray.origin.y/s),100,Main.HEIGHT);
+				Assets.font.draw(batch,level.entities.size()+"",100,Main.HEIGHT);
+				//Assets.font.draw(batch,Math.floor(ray.origin.x/s)+" "+Math.floor(ray.origin.y/s),100,Main.HEIGHT);
 
 				Assets.font.draw(batch,Gdx.graphics.getFramesPerSecond()+"",100,Main.HEIGHT-30);
 				
 			batch.end();
+			
+			if (Gdx.input.isKeyPressed(Input.Keys.P)) {
+			Util.pushMatrix(shapeRenderer.getTransformMatrix());
+			shapeRenderer.scale(s,s,1);
+			shapeRenderer.translate(0.5f, 0.5f, 0);
+			shapeRenderer.begin(ShapeType.Filled);
+				TargetSolutionMap map = level.getTargetSolutionMap((int)(ray.origin.x/s), (int)(ray.origin.y/s));
+				if (map != null) {
+					for(int y = 0; y < level.map_height; y++) {
+						for(int x = 0; x < level.map_width; x++) {
+							Node n = map.getNode(x, y);
+							if (n == null) continue;
+							if (n.parent == null) continue;
+							float v = 1f-n.distance/30;
+							shapeRenderer.setColor(0, v, 0, 1);
+							Util.drawWidthLine(shapeRenderer, n.x, n.y, n.parent.x, n.parent.y, 3/s);
+						}
+					}
+				}
+			shapeRenderer.end();
+			shapeRenderer.setTransformMatrix(Util.popMatrix());
+			}
 			
 			level.renderDebug(shapeRenderer);	
 		}

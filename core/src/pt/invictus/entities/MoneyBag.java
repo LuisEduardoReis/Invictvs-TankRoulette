@@ -13,12 +13,15 @@ import pt.invictus.entities.particles.Explosion;
 import pt.invictus.entities.particles.Shard;
 import pt.invictus.entities.particles.Spark;
 
-public class MoneyBag extends Entity {
+public class MoneyBag extends Entity implements Respawnable {
+	
+	public static final int EXPLOSION_RADIUS = Bomb.EXPLOSION_RADIUS;
 	
 	float respawn_timer, respawn_delay;
 
 	public MoneyBag(Level level) {
 		super(level);
+		level.moneybags.add(this);
 	
 		sprite = Sprites.moneybag;
 		radius = Main.SIZE/2;
@@ -91,4 +94,7 @@ public class MoneyBag extends Entity {
 		
 		super.render(batch);	
 	}
+
+	@Override
+	public float getRespawnTimer() { return respawn_timer; }
 }

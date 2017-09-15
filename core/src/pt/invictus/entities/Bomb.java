@@ -13,6 +13,8 @@ import pt.invictus.entities.player.Player;
 
 public class Bomb extends Entity {
 
+	public static final int EXPLOSION_RADIUS = 4*Main.SIZE;
+
 	float t, lifetime;
 	
 	Entity owner;	
@@ -25,6 +27,9 @@ public class Bomb extends Entity {
 		
 		t = 0;
 		lifetime = 2;
+		
+		entityCollisions = true;
+		levelCollisions = true;
 		
 		z = -1;
 	}
@@ -61,7 +66,7 @@ public class Bomb extends Entity {
 
 	public static void explosion(float x, float y, Level level, Entity owner, float scale, int damage) {
 		
-		float range = scale*4*Main.SIZE;
+		float range = scale*EXPLOSION_RADIUS;
 		for(Player p : level.players) {
 			if (p == owner) continue;
 			

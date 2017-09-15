@@ -37,6 +37,7 @@ public class Level {
 	
 	public ArrayList<Player> players = new ArrayList<Player>();
 	public ArrayList<Entity> pickups = new ArrayList<Entity>();
+	public ArrayList<MoneyBag> moneybags = new ArrayList<MoneyBag>();
 	
 	
 	public ArrayList<Vector2> spawns = new ArrayList<Vector2>();

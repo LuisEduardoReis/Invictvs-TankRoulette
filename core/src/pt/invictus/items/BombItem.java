@@ -17,7 +17,10 @@ public class BombItem extends Item {
 	
 	@Override
 	public void use(Player p) {
-		new Bomb(p.level, p).setPosition(p.x,p.y);
+		Bomb b = new Bomb(p.level, p);
+		b.setPosition(p.x + (0.9f*p.radius)*(float)Math.cos(p.direction), p.y + (0.9f*p.radius)*(float)Math.sin(p.direction));
+		b.addEVelDir(p.direction, 1500);
+		
 		
 		Main.playSound(Assets.dropbomb);		
 	}

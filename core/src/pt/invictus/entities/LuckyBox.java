@@ -12,7 +12,7 @@ import pt.invictus.Util;
 import pt.invictus.entities.particles.Shard;
 import pt.invictus.entities.player.Player;
 
-public class LuckyBox extends Entity {
+public class LuckyBox extends Entity implements Respawnable {
 
 	public float respawn_timer;
 	float respawn_delay;
@@ -84,4 +84,7 @@ public class LuckyBox extends Entity {
 			Assets.font.draw(batch, "D:"+((int)despawn_timer), x,y+Main.SIZE);
 		}*/
 	}
+	
+	@Override
+	public float getRespawnTimer() { return respawn_timer; }
 }

@@ -2,13 +2,13 @@ package pt.invictus.entities.player;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
 
 import pt.invictus.Assets;
 import pt.invictus.ColorUtils;
 import pt.invictus.Level;
 import pt.invictus.Main;
 import pt.invictus.Sprites;
+import pt.invictus.Tile;
 import pt.invictus.Util;
 import pt.invictus.entities.Bullet;
 import pt.invictus.entities.Entity;
@@ -52,7 +52,7 @@ public class Player extends Entity {
 		
 		this.index = i;
 		
-		sprite = Sprites.player[i];		
+		sprite = Sprites.player[i % Sprites.player.length];		
 		
 		levelCollisions = true;
 		entityCollisions = true;
@@ -136,9 +136,8 @@ public class Player extends Entity {
 						useItem();
 					else {
 						// Normal Shot
-						Bullet b = (Bullet) new Bullet(level,this).setPosition((float) (x + radius*Math.cos(direction)),(float) (y + radius*Math.sin(direction)));
-						b.dx = (float) (bullet_speed*Math.cos(direction));
-						b.dy = (float) (bullet_speed*Math.sin(direction));
+						Bullet b = (Bullet) new Bullet(level,this).setPosition((float) (x + (0.9f*radius)*Math.cos(direction)),(float) (y + (0.9f*radius)*Math.sin(direction)));
+						b.setDVel(direction, bullet_speed);
 						
 						if (star_timer == 0) addEVel((float) (-recoil*Math.cos(direction)), (float) (-recoil*Math.sin(direction)));
 						
@@ -180,14 +179,28 @@ public class Player extends Entity {
 	
 	public void respawn() {
 		health = full_health;
-		Vector2 s = level.spawns.get(Util.randomRangei(level.spawns.size()));
-		setPosition(s.x, s.y);
+		//Vector2 s = level.spawns.get(Util.randomRangei(level.spawns.size()));
+		//setPosition(s.x, s.y);
+		spawnRandomly();
 		dead = false;
 		levelCollisions = true;
 		
-		new Explosion(level).setDscale(4f*scale).setPosition(s.x, s.y).setBlend(player_colors[index]);
+		new Explosion(level).setDscale(4f*scale).setPosition(x, y).setBlend(player_colors[index % player_colors.length]);
 		
 		Main.playSound(Assets.itempickup);
+	}
+	
+	public void spawnRandomly() {
+		float sx, sy;
+		do {
+			sx = 1+Util.randomRangei(level.map_width-2);
+			sy = 1+Util.randomRangei(level.map_height-2);
+		} while(level.getTile((int)sx,(int)sy) != Tile.GROUND);
+		sx = Main.SIZE*(sx+0.5f);
+		sy = Main.SIZE*(sy+0.5f);
+		
+		setPosition(sx, sy);
+		setDirection(Util.randomRangef(0, 2*(float)Math.PI));
 	}
 
 	public void useItem() {					
