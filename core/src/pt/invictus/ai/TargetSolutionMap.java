@@ -19,8 +19,8 @@ public class TargetSolutionMap {
 			Position.get(-1, 0), 				   	 Position.get(1,  0),
 			Position.get(-1, 1), Position.get(0, 1), Position.get(1,  1)};
 	
-	public Node getNode(int x, int y) { if (x < 0 || y < 0 || x >= width || y >= width) return null; else return nodes[y][x];}
-	void setNode(int x, int y, Node n) { if (!(x < 0 || y < 0 || x >= width || y >= width)) nodes[y][x] = n;}
+	public Node getNode(int x, int y) { if (x < 0 || y < 0 || x >= width || y >= height) return null; else return nodes[y][x];}
+	void setNode(int x, int y, Node n) { if (!(x < 0 || y < 0 || x >= width || y >= height)) nodes[y][x] = n;}
 	
 	
 	public TargetSolutionMap(Level level, int tx, int ty) {

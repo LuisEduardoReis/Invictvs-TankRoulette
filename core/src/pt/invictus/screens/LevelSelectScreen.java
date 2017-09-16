@@ -2,14 +2,7 @@ package pt.invictus.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 import pt.invictus.Assets;
 import pt.invictus.Main;
@@ -18,56 +11,26 @@ import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
 import pt.invictus.controllers.Xbox360Controller;
 
-public class LevelSelectScreen extends ScreenAdapter {
-	Main main;
-	
-	SpriteBatch batch;	
-	ShapeRenderer shapeRenderer;
-	OrthographicCamera camera;
-	Viewport viewport;
-	
-	float t;
-	
-	float fadein_timer, fadein_delay;
-	float fadeout_timer, fadeout_delay;
-	Runnable fadeout_action;
-	
-	int index;
-	String levels[] = {"level.tmx","level2.tmx"};
+public class LevelSelectScreen extends DefaultScreen {
 		
+	int index;
+	String levels[] = {"level.tmx","level2.tmx"};		
 	
 	public LevelSelectScreen(Main main) {
-		this.main = main;
+		super(main);
 		
-		t = 0;
-		
-		batch = new SpriteBatch();
-		shapeRenderer = new ShapeRenderer();
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		camera.translate(Main.WIDTH/2, Main.HEIGHT/2);
-		viewport = new FitViewport(Main.WIDTH, Main.HEIGHT, camera);
-
 		fadein_delay = 2;
 		fadein_timer = fadein_delay;
 		
 		fadeout_timer = -1;
 		fadeout_delay = 1;
-		fadeout_action = null;
 		
 		index = 0;
 	}
 	
 	@Override
-	public void render(float delta) {
-		
-		// Update
-		t += delta;
-		
-		if (fadein_timer > 0) fadein_timer = Util.stepTo(fadein_timer, 0, delta);
-		if (fadeout_timer > 0) fadeout_timer = Util.stepTo(fadeout_timer, 0, delta);
-		if (fadeout_timer == 0) {
-			if (fadeout_action != null) fadeout_action.run();
-		}		
+	public void update(float delta) {
+		super.update(delta);
 		
 		if (fadeout_timer < 0) {
 			boolean start = false;
@@ -87,6 +50,9 @@ public class LevelSelectScreen extends ScreenAdapter {
 					start = true; break;
 				}
 			}
+			
+			if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) index = 0;
+			if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) index = 1;
 				
 			if (start || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
 				
@@ -101,18 +67,11 @@ public class LevelSelectScreen extends ScreenAdapter {
 				}; 
 			}
 		}
-		
-		
-		// Render
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		Gdx.gl.glClearColor(0,0,0,1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		
-		viewport.apply();
-		batch.setProjectionMatrix(camera.combined);
-		shapeRenderer.setProjectionMatrix(camera.combined);
-		
+	}
+	
+	@Override
+	public void display() {
+		super.display();		
 		
 		batch.begin();
 		
@@ -136,25 +95,9 @@ public class LevelSelectScreen extends ScreenAdapter {
 				Assets.font.getData().setScale(2.5f);
 				Util.drawTitle(batch, Assets.font, "Press Start/Space to continue", Main.WIDTH/2,Main.HEIGHT*0.15f, 1);
 			}
-			if (fadein_timer > 0) {
-				batch.setColor(0,0,0,fadein_timer/fadein_delay);
-				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);
-			}			
-			if (fadeout_timer >= 0) {
-				batch.setColor(0,0,0,1-(fadeout_timer/fadeout_delay));
-				batch.draw(Assets.fillTexture,0,0,Main.WIDTH,Main.HEIGHT);
-			}
+			
 		batch.end();
 		
-		super.render(delta);
 	}
-	
-	@Override
-	public void resize(int width, int height) {
-		super.resize(width, height);
-		
-		viewport.update(width, height);
-	}
-	
 
 }

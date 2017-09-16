@@ -190,7 +190,7 @@ public class Level {
 			if (p.item_timer > 0.1f) {
 				slotmachine = true; break; 
 			}
-		if (Main.SOUND) {
+		if (Main.SOUND && game.fadeout_timer == -1) {
 			if (Assets.slotmachine.isPlaying() && !slotmachine) Assets.slotmachine.stop();
 			if (!Assets.slotmachine.isPlaying() && slotmachine) Assets.slotmachine.play();
 		} else

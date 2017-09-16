@@ -12,9 +12,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class Assets {
 
 	
-	public static Texture spritesheet, fillTexture, controls;
+	public static Texture spritesheet, fillTexture, controls, controls_keyboard;
 	public static Texture level1, level2;
-	public static TextureRegion xbox_controller, keyboardmouse_controller;
+	public static TextureRegion xbox_controller, keyboardmouse_controller, computer_controller;
 	public static TextureRegion rect;
 	public static TextureRegion[][] spritesheet60;
 	public static TextureRegion roulette;
@@ -31,10 +31,12 @@ public class Assets {
 		
 		spritesheet = new Texture(Gdx.files.internal("spritesheet.png"));
 		controls = new Texture(Gdx.files.internal("controls.png"));
+		controls_keyboard = new Texture(Gdx.files.internal("controls_keyboard.png"));
 		level1 = new Texture(Gdx.files.internal("level1.png"));
 		level2 = new Texture(Gdx.files.internal("level2.png"));
 		xbox_controller = new TextureRegion(new Texture(Gdx.files.internal("xbox_controller.png")));
 		keyboardmouse_controller = new TextureRegion(new Texture(Gdx.files.internal("keyboardmouse_controller.png")));
+		computer_controller = new TextureRegion(new Texture(Gdx.files.internal("computer_controller.png")));
 		
 		spritesheet60 = new TextureRegion[spritesheet.getWidth()/s][spritesheet.getHeight()/s];
 		for(int i = 0; i < spritesheet60.length; i++) {
