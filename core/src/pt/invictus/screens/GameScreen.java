@@ -52,10 +52,10 @@ public class GameScreen extends DefaultScreen {
 		level = new Level(this, level_name);
 		paused = false;		
 		
-		int i = 0;
-		int n = main.ai_players+main.controllers.size();
-		for(GameController controller : main.controllers) new HumanPlayer(level, controller, i++);
-		for(; i < n; i++) new AIPlayer(level, i);
+		int i = 0, hp;		
+		for(GameController controller : main.controllers) if (controller.getActive()) new HumanPlayer(level, controller, i++);
+		hp = i;
+		for(; i < hp + main.ai_players; i++) new AIPlayer(level, i);
 		
 		int so = Util.randomRangei(level.spawns.size());
 		for(Player p : level.players) {

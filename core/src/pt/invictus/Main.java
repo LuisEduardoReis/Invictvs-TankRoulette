@@ -17,13 +17,14 @@ import pt.invictus.screens.*;
 public class Main extends Game {
 
 	public static boolean DEBUG = false;
-	public static boolean MUSIC = false;
+	public static boolean MUSIC = true;
 	public static boolean SOUND = true;
 	public static boolean PARTICLES = true;
 	
 	public static final int SIZE = 60;
 	public static final int WIDTH = 1920;
 	public static final int HEIGHT = 1080;
+	public static final String TITLE = "Tank Roulette";
 
 	public ArrayList<GameController> controllers = new ArrayList<GameController>();
 	public int ai_players = 4;
@@ -47,6 +48,8 @@ public class Main extends Game {
 		
 		for(GameController controller : controllers) controller.setActive(true);
 		if (controllers.size() > 1) controllers.get(0).setActive(false);		
+		
+		Assets.music.stop();
 		
 		setScreen(new MenuScreen(this));
 		//setScreen(new ControllerSelectScreen(this));

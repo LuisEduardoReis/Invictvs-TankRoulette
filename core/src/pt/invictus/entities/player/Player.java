@@ -19,6 +19,8 @@ import pt.invictus.items.Item;
 
 public class Player extends Entity {
 
+	public static final float DEFAULT_MAXSPEED = 250;
+
 	public int index;
 	
 	public int lives;
@@ -75,7 +77,7 @@ public class Player extends Entity {
 		
 		bullet_speed = 400;
 		recoil = 150;
-		maxspeed = 250;
+		maxspeed = DEFAULT_MAXSPEED;
 		
 		speed = 0;
 		anim_speed = 0;
