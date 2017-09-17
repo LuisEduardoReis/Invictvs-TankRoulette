@@ -116,7 +116,7 @@ public class Player extends Entity {
 			}
 			
 			if (Math.abs(trottle_val) > deadzone) { 
-				speed = (star_timer > 0 ? 1.25f : 1) * maxspeed * Math.abs(trottle_val);
+				speed = (star_timer > 0 ? 1.25f : 1) * maxspeed * trottle_val;
 			} else
 				speed = 0;
 			

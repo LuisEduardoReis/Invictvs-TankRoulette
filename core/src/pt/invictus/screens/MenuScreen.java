@@ -10,11 +10,9 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 
 import pt.invictus.Assets;
 import pt.invictus.Main;
-import pt.invictus.Sprites;
 import pt.invictus.Util;
 import pt.invictus.controllers.GameController;
 import pt.invictus.controllers.GameController.Key;
-import pt.invictus.entities.player.Player;
 
 public class MenuScreen extends DefaultScreen {
 
